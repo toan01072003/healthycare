@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SmartPHC - Login / Register</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body { background: #f8f9fa; }
+    .tab-pane { margin-top: 20px; }
+  </style>
+</head>
+<body>
+<div class="container mt-5">
+  <h3 class="text-center">SmartPHC Patient Portal</h3>
+  <ul class="nav nav-tabs justify-content-center" id="authTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">Login</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab">Sign Up</button>
+    </li>
+  </ul>
+  <div class="tab-content" id="authTabsContent">
+    <!-- Login Tab -->
+    <div class="tab-pane fade show active" id="login" role="tabpanel">
+      <form id="loginForm" class="mt-3">
+        <input class="form-control mb-2" type="email" name="email" placeholder="Email" required>
+        <input class="form-control mb-2" type="password" name="password" placeholder="Password" required>
+        <button class="btn btn-primary w-100">Login</button>
+      </form>
+    </div>
+
+    <!-- Register Tab -->
+    <div class="tab-pane fade" id="register" role="tabpanel">
+      <form id="registerForm" class="mt-3">
+        <input class="form-control mb-2" type="email" name="email" placeholder="Email" required>
+        <input class="form-control mb-2" type="password" name="password" placeholder="Password" required>
+        <select class="form-control mb-2" name="role">
+          <option value="patient">Patient</option>
+        </select>
+        <button class="btn btn-success w-100">Register</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Thêm vào đầu file, ngay sau thẻ <body> -->
+<form style="display:none">{% csrf_token %}</form>
+<script>
+// Đảm bảo CSRF token luôn có sẵn
+document.addEventListener('DOMContentLoaded', function() {
+    // Lấy token từ form ẩn
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // Lưu vào biến global
+    window.csrftoken = csrftoken;
+});
+</script>
+
+<script>
+// Lấy CSRF token từ cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+// Gửi login
+document.getElementById('loginForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const res = await fetch('/auth/login/', {
+        method: 'POST',
+        body: JSON.stringify(Object.fromEntries(form)),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': window.csrftoken || getCookie('csrftoken')
+        },
+        credentials: 'same-origin'
+    });
+    const result = await res.json();
+    if (res.ok) {
+        window.location.href = '/auth/home/';
+    } else {
+        alert(result.error || 'Login failed');
+    }
+};
+
+// Gửi register
+document.getElementById('registerForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const res = await fetch('/auth/register/', {
+        method: 'POST',
+        body: JSON.stringify(Object.fromEntries(form)),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        credentials: 'same-origin'
+    });
+    const result = await res.json();
+    if (res.ok) {
+        alert('Registered! Please login.');
+    } else {
+        alert(result.error || 'Registration failed');
+    }
+};
+</script>
+</body>
+</html>

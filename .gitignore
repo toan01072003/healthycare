@@ -1,0 +1,4 @@
+chatbot/logic/*.pkl
+chatbot/logic/*.csv
+chatbot/logic/Disease and symptoms dataset.csv
+chatbot/logic/chatbot_model.pkl

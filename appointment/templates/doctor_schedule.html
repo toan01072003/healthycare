@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">📅 Lịch khám của bạn</h2>
+
+{% for a in appointments %}
+  <div class="card mb-3 p-3 shadow-sm">
+    <h5>{{ a.date_time|date:"H:i - d/m/Y" }}</h5>
+    <p><strong>Trạng thái:</strong> {{ a.get_status_display }}</p>
+    <p><strong>Lý do khám:</strong> {{ a.reason }}</p>
+    <p><strong>Ghi chú:</strong> {{ a.notes|default:"(Không có)" }}</p>
+    <hr>
+    <h6>👤 Bệnh nhân</h6>
+    <p>Họ tên: {{ a.patient_profile.full_name }}</p>
+    <p>SĐT: {{ a.patient_profile.phone_number }}</p>
+    <p>Giới tính: {{ a.patient_profile.gender }}</p>
+    <p>Ngày sinh: {{ a.patient_profile.date_of_birth }}</p>
+
+    <form method="post" action="{% url 'update-appointment' a.id %}">
+      {% csrf_token %}
+      <label for="status">Cập nhật trạng thái:</label>
+      <select name="status" class="form-select mb-2">
+        {% for key, val in a.STATUS_CHOICES %}
+          <option value="{{ key }}" {% if key == a.status %}selected{% endif %}>{{ val }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="notes">Ghi chú:</label>
+      <textarea name="notes" class="form-control">{{ a.notes }}</textarea>
+      <br>
+      <button type="submit" class="btn btn-primary">💾 Lưu thay đổi</button>
+    </form>
+  </div>
+{% empty %}
+  <div class="alert alert-info">Không có lịch khám nào.</div>
+{% endfor %}
+{% endblock %}

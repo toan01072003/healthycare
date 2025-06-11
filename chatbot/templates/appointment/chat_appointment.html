@@ -1,0 +1,50 @@
+<h3 class="mb-3">📅 Appointment Chatbot</h3>
+
+<div class="chat-box mb-3">
+  <div class="bot"><strong>Bot:</strong> {{ bot_message }}</div>
+</div>
+
+<form method="post" id="chat-form">
+  {% csrf_token %}
+
+  <!-- Quick select -->
+  <div class="row mb-2">
+    <div class="col-md-6">
+      <label>Select Date & Time:</label>
+      <input type="datetime-local" name="date_input" class="form-control">
+    </div>
+    <div class="col-md-6">
+      <label>Select Doctor:</label>
+      <select name="doctor_input" class="form-control">
+        <option value="">-- Choose Doctor --</option>
+        {% for doc in doctors %}
+          <option value="{{ doc.full_name }}">{{ doc.full_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <!-- OR type message -->
+  <input type="text" name="message" class="form-control mb-2" placeholder="Or type your request here...">
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<!-- Suggestions -->
+<div class="mt-4">
+  <h5>💡 Example phrases:</h5>
+  <ul>
+    <li>I want to book an appointment at 10 AM tomorrow</li>
+    <li>Schedule a visit with Dr. Lan on Tuesday afternoon</li>
+    <li>Book with Dr. Minh at 3 PM on May 28</li>
+  </ul>
+</div>
+
+<style>
+  .chat-box {
+    min-height: 80px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: #f1f1f1;
+  }
+  .bot { color: green; }
+</style>

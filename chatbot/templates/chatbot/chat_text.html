@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SmartPHC Chatbot</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    .chat-box {
+      height: 300px;
+      overflow-y: scroll;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #f8f9fa;
+    }
+    .user { text-align: right; color: blue; }
+    .bot { text-align: left; color: green; }
+    .symptom-chip {
+      display: inline-block;
+      background-color: #e0e0e0;
+      border-radius: 15px;
+      padding: 4px 10px;
+      margin: 2px;
+      cursor: pointer;
+      font-size: 0.85em;
+      transition: background-color 0.3s ease;
+    }
+    .symptom-chip:hover {
+      background-color: #c0d4f3;
+    }
+    .symptom-chip.selected {
+      background-color: #88c0d0;
+      color: white;
+    }
+    .remove-btn {
+      margin-left: 6px;
+      color: red;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="container mt-4">
+  <h2>SmartPHC – Chatbot Dự đoán Bệnh</h2>
+
+  <div class="chat-box mb-3">
+    {% for who, msg in chat_history %}
+      {% if who == "Bạn" %}
+        <div class="user"><strong>{{ who }}:</strong> {{ msg|linebreaksbr }}</div>
+      {% else %}
+        <div class="bot"><strong>{{ who }}:</strong> {{ msg|linebreaksbr }}</div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <form method="post" class="mb-2">
+    {% csrf_token %}
+    <div class="input-group">
+      {{ form.message }}
+      <button type="submit" class="btn btn-primary">Send</button>
+      <button type="button" onclick="suggestSymptoms()" class="btn btn-secondary">Suggest</button>
+    </div>
+  </form>
+
+  <div id="suggestion-box" class="mb-3"></div>
+
+  <h5>📌 Common Symptoms by Category (click to add):</h5>
+  <div class="row">
+    <div class="col-md-12">
+      <strong>🧠 Mental / Neurological:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'anxiety and nervousness')">anxiety and nervousness</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'depression')">depression</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'dizziness')">dizziness</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'insomnia')">insomnia</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'fainting')">fainting</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'slurring words')">slurring words</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'memory disturbance')">memory disturbance</span>
+<hr>
+<strong>❤️ Cardiovascular:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'chest pain')">chest pain</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'palpitations')">palpitations</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'irregular heartbeat')">irregular heartbeat</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'increased heart rate')">increased heart rate</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'low blood pressure')">low blood pressure</span>
+<hr>
+<strong>😮‍💨 Respiratory:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'cough')">cough</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'shortness of breath')">shortness of breath</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'wheezing')">wheezing</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'nasal congestion')">nasal congestion</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'hoarse voice')">hoarse voice</span>
+<hr>
+<strong>🤢 Gastrointestinal:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'vomiting')">vomiting</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'nausea')">nausea</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'abdominal pain')">abdominal pain</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'diarrhea')">diarrhea</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'bloating')">bloating</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'constipation')">constipation</span>
+<hr>
+<strong>🔥 Infectious / Inflammatory:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'fever')">fever</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'chills')">chills</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'pus in urine')">pus in urine</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'swollen lymph nodes')">swollen lymph nodes</span>
+<hr>
+<strong>👁️ ENT / Vision:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'sore throat')">sore throat</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'ear pain')">ear pain</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'eye redness')">eye redness</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'blurred vision')">blurred vision</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'sneezing')">sneezing</span>
+<hr>
+<strong>🦴 Musculoskeletal:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'back pain')">back pain</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'joint pain')">joint pain</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'knee pain')">knee pain</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'muscle pain')">muscle pain</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'stiffness')">stiffness</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'cramps')">cramps</span>
+<hr>
+<strong>🧬 Genitourinary:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'painful urination')">painful urination</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'frequent urination')">frequent urination</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'vaginal discharge')">vaginal discharge</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'impotence')">impotence</span>
+<hr>
+<strong>🧒 Pediatric:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'irritable infant')">irritable infant</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'diaper rash')">diaper rash</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'spitting up')">spitting up</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'feeding problem')">feeding problem</span>
+<hr>
+<strong>🧍 General:</strong><br>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'fatigue')">fatigue</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'weakness')">weakness</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'sweating')">sweating</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'weight loss')">weight loss</span>
+<span class="symptom-chip" onclick="toggleSymptom(this, 'feeling hot or cold')">feeling hot or cold</span>
+<hr>
+    </div>
+  </div>
+
+  <script>
+    function toggleSymptom(el, symptom) {
+      const input = document.querySelector('input[name="message"]');
+      let current = input.value.split(",").map(s => s.trim()).filter(s => s);
+      const idx = current.findIndex(s => s.toLowerCase() === symptom.toLowerCase());
+      if (idx >= 0) {
+        current.splice(idx, 1);
+        el.classList.remove("selected");
+      } else {
+        current.push(symptom);
+        el.classList.add("selected");
+      }
+      input.value = current.join(", ");
+      input.focus();
+    }
+
+    function suggestSymptoms() {
+      const input = document.querySelector('input[name="message"]').value;
+      const query = input.trim().split(",").pop().trim();
+      if (!query) return;
+
+      fetch(`/chatbot/suggest/?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+          const box = document.getElementById("suggestion-box");
+          if (data.suggestions.length === 0) {
+            box.innerHTML = "<i>No match found</i>";
+          } else {
+            box.innerHTML = "<strong>Suggestions:</strong> " +
+              data.suggestions.map(s => `<span class="symptom-chip" onclick="addSuggested('${s}')">${s}<span class='remove-btn' onclick='removeSuggested(event, \"${s}\")'>&times;</span></span>`).join('');
+          }
+        });
+    }
+
+    function addSuggested(symptom) {
+      const input = document.querySelector('input[name="message"]');
+      let current = input.value.split(",").map(s => s.trim()).filter(s => s);
+      if (!current.includes(symptom)) {
+        current.push(symptom);
+        input.value = current.join(", ");
+      }
+      input.focus();
+    }
+
+    function removeSuggested(event, symptom) {
+      event.stopPropagation();
+      const input = document.querySelector('input[name="message"]');
+      let current = input.value.split(",").map(s => s.trim());
+      input.value = current.filter(s => s !== symptom).join(", ");
+      input.focus();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+from .views import VitalsViewSet
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'vitals', VitalsViewSet)
+urlpatterns = [path('', include(router.urls))]
