@@ -1,13 +1,16 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.conf import settings
+import uuid
 
 
-# Create your models here.
-class Vitals(models.Model):
+class VitalSigns(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     patient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    recorded_at = models.DateTimeField(auto_now_add=True)
-    heart_rate = models.IntegerField()
-    blood_pressure = models.CharField(max_length=10)  # e.g., 120/80
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='vitals_recorded')
+    recorded_at = models.DateTimeField()
+    blood_pressure = models.CharField(max_length=20)
     temperature = models.FloatField()
-    spo2 = models.IntegerField()  # oxygen saturation
+    heart_rate = models.IntegerField()
+    oxygen_saturation = models.FloatField()
+    respiratory_rate = models.IntegerField()
+
