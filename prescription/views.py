@@ -2,9 +2,14 @@ from django.shortcuts import render
 from rest_framework import viewsets
 
 # Create your views here.
-from .models import Prescription
-from .serializers import PrescriptionSerializer
+from .models import PrescriptionHeader, PrescriptionItem
+from .serializers import PrescriptionHeaderSerializer, PrescriptionItemSerializer
 
-class PrescriptionViewSet(viewsets.ModelViewSet):
-    queryset = Prescription.objects.all()
-    serializer_class = PrescriptionSerializer
+class PrescriptionHeaderViewSet(viewsets.ModelViewSet):
+    queryset = PrescriptionHeader.objects.all()
+    serializer_class = PrescriptionHeaderSerializer
+
+
+class PrescriptionItemViewSet(viewsets.ModelViewSet):
+    queryset = PrescriptionItem.objects.all()
+    serializer_class = PrescriptionItemSerializer

@@ -1,9 +1,9 @@
 
 
-from .models import ChronicCondition
+from .models import ChronicCareLog
 from rest_framework import serializers
 
-class ChronicConditionSerializer(serializers.ModelSerializer):
+class ChronicCareLogSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChronicCondition
+        model = ChronicCareLog
         fields = '__all__'
