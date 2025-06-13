@@ -1,10 +1,11 @@
 from django.shortcuts import render
 
 # Create your views here.
-from .models import Vitals
-from .serializers import VitalsSerializer
+from .models import VitalSigns
+from .serializers import VitalSignsSerializer
 from rest_framework import viewsets
 
-class VitalsViewSet(viewsets.ModelViewSet):
-    queryset = Vitals.objects.all()
-    serializer_class = VitalsSerializer
+class VitalSignsViewSet(viewsets.ModelViewSet):
+    queryset = VitalSigns.objects.all()
+    serializer_class = VitalSignsSerializer
+

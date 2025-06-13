@@ -1,8 +1,9 @@
 
 from rest_framework import serializers
-from .models import Vitals
+from .models import VitalSigns
 
-class VitalsSerializer(serializers.ModelSerializer):
+class VitalSignsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Vitals
+        model = VitalSigns
         fields = '__all__'
+

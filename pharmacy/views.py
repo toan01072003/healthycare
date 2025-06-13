@@ -1,14 +1,8 @@
-from django.shortcuts import render
 from rest_framework import viewsets
+from .models import Dispensation
+from .serializers import DispensationSerializer
 
-# Create your views here.
-from .models import PharmacyItem, DispensedMedicine
-from .serializers import PharmacyItemSerializer, DispensedMedicineSerializer
+class DispensationViewSet(viewsets.ModelViewSet):
+    queryset = Dispensation.objects.all()
+    serializer_class = DispensationSerializer
 
-class PharmacyItemViewSet(viewsets.ModelViewSet):
-    queryset = PharmacyItem.objects.all()
-    serializer_class = PharmacyItemSerializer
-
-class DispensedMedicineViewSet(viewsets.ModelViewSet):
-    queryset = DispensedMedicine.objects.all()
-    serializer_class = DispensedMedicineSerializer
