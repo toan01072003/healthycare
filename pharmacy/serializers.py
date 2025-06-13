@@ -1,14 +1,9 @@
 
 
-from .models import PharmacyItem, DispensedMedicine
+from .models import Dispensation
 from rest_framework import serializers
 
-class PharmacyItemSerializer(serializers.ModelSerializer):
+class DispensationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PharmacyItem
-        fields = '__all__'
-
-class DispensedMedicineSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DispensedMedicine
+        model = Dispensation
         fields = '__all__'
