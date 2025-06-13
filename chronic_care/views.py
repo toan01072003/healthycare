@@ -1,10 +1,8 @@
-from django.shortcuts import render
-
-# Create your views here.
-from .models import ChronicCondition
-from .serializers import ChronicConditionSerializer
 from rest_framework import viewsets
+from .models import ChronicCareLog
+from .serializers import ChronicCareLogSerializer
 
-class ChronicConditionViewSet(viewsets.ModelViewSet):
-    queryset = ChronicCondition.objects.all()
-    serializer_class = ChronicConditionSerializer
+class ChronicCareLogViewSet(viewsets.ModelViewSet):
+    queryset = ChronicCareLog.objects.all()
+    serializer_class = ChronicCareLogSerializer
+

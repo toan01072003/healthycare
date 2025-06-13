@@ -1,9 +1,9 @@
 
 
-from .models import LabTest
+from .models import LabResult
 from rest_framework import serializers
 
-class LabTestSerializer(serializers.ModelSerializer):
+class LabResultSerializer(serializers.ModelSerializer):
     class Meta:
-        model = LabTest
+        model = LabResult
         fields = '__all__'
