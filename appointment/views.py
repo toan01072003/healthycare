@@ -16,12 +16,21 @@ def doctor_schedule_view(request):
         messages.error(request, "Bạn không có quyền truy cập.")
         return redirect('home')
 
-    appointments = Appointment.objects.filter(doctor=request.user).order_by('date_time').select_related('patient')
-    for appt in appointments:
+    upcoming = Appointment.objects.filter(
+        doctor=request.user,
+        date_time__gte=timezone.now()
+    ).order_by('date_time').select_related('patient')
+    history = Appointment.objects.filter(
+        doctor=request.user,
+        date_time__lt=timezone.now()
+    ).order_by('-date_time').select_related('patient')
+
+    for appt in list(upcoming) + list(history):
         appt.patient_profile = UserProfile.objects.filter(user=appt.patient).first()
 
     return render(request, 'doctor_schedule.html', {
-        'appointments': appointments,
+        'upcoming': upcoming,
+        'history': history,
     })
 
 @login_required
