@@ -31,3 +31,23 @@ class AppointmentChatbotTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Do you confirm', response.context['bot_message'])
 
+        # confirm the appointment
+        response = self.client.post(url, {
+            'message': 'yes'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('has been confirmed', response.context['bot_message'])
+
+        from appointment.models import Appointment
+        self.assertEqual(Appointment.objects.count(), 1)
+        appt = Appointment.objects.first()
+        self.assertEqual(appt.doctor, self.doctor)
+
+        # doctor should see the appointment in their schedule
+        self.client.logout()
+        self.client.force_login(self.doctor)
+        schedule_url = reverse('doctor-schedule')
+        response = self.client.get(schedule_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Confirmed via chatbot')
+

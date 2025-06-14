@@ -25,3 +25,14 @@ class AuthServiceTests(APITestCase):
                 self.assertEqual(login_response.json().get('role'), role)
 
 
+    def test_admin_created_user_can_login_without_approval(self):
+        login_url = reverse('login')
+
+        User.objects.create_user(
+            email='staff@example.com', password='pass1234', role='doctor', status='pending', is_staff=True
+        )
+
+        response = self.client.post(login_url, {'email': 'staff@example.com', 'password': 'pass1234'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('role'), 'doctor')
+
