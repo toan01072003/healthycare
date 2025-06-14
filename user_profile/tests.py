@@ -26,3 +26,23 @@ class UserProfileTests(APITestCase):
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(update_response.data['address'], '456 Avenue')
 
+    def test_my_profile_create_and_update(self):
+        self.client.force_login(self.user)
+        url = reverse('my-profile')
+        data = {
+            'full_name': 'Test Patient',
+            'date_of_birth': '1990-01-01',
+            'gender': 'male',
+            'phone_number': '123456789',
+            'address': '123 Street',
+            'profile_photo': ''
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+        update_data = data.copy()
+        update_data['address'] = '789 Road'
+        update_response = self.client.put(url, update_data, format='json')
+        self.assertEqual(update_response.status_code, 200)
+        self.assertEqual(update_response.data['address'], '789 Road')
+
