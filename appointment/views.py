@@ -1,15 +1,14 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Appointment
-from user_profile.models import UserProfile
-from .serializers import AppointmentWithPatientSerializer
-
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
-from .models import Appointment
-from user_profile.models import UserProfile
+from django.utils import timezone
 from django.contrib import messages
+
+from .models import Appointment
+from .serializers import AppointmentWithPatientSerializer
+from user_profile.models import UserProfile
 
 @login_required
 def doctor_schedule_view(request):
@@ -102,8 +101,9 @@ def create_appointment_from_chatbot(request):
     reason = data.get('reason', 'Đặt lịch qua chatbot')
 
     try:
-        doctor = UserProfile .objects.get(role='doctor', email__icontains=doctor_name)
-    except UserProfile .DoesNotExist:
+        doctor_profile = UserProfile.objects.get(full_name__icontains=doctor_name, user__role='doctor')
+        doctor = doctor_profile.user
+    except UserProfile.DoesNotExist:
         return Response({"error": "Không tìm thấy bác sĩ"}, status=404)
 
     date_time = parse_datetime(date_time_str)
@@ -121,7 +121,7 @@ def create_appointment_from_chatbot(request):
     return Response({
         "message": "Lịch hẹn đã được tạo",
         "appointment_id": str(appointment.id),
-        "doctor": doctor.email,
+        "doctor": doctor_profile.full_name,
         "date_time": date_time,
         "status": appointment.status
     })
@@ -142,3 +142,27 @@ def doctor_schedule_view_html(request):
     appointments = Appointment.objects.filter(doctor=request.user).order_by("date_time")
     serializer = AppointmentWithPatientSerializer(appointments, many=True)
     return Response(serializer.data)
+
+
+@login_required
+def patient_schedule_view(request):
+    if request.user.role != 'patient':
+        messages.error(request, "Bạn không có quyền truy cập.")
+        return redirect('home')
+
+    upcoming = Appointment.objects.filter(
+        patient=request.user,
+        date_time__gte=timezone.now()
+    ).order_by('date_time').select_related('doctor')
+    history = Appointment.objects.filter(
+        patient=request.user,
+        date_time__lt=timezone.now()
+    ).order_by('-date_time').select_related('doctor')
+
+    for appt in list(upcoming) + list(history):
+        appt.doctor_profile = UserProfile.objects.filter(user=appt.doctor).first()
+
+    return render(request, 'patient_schedule.html', {
+        'upcoming': upcoming,
+        'history': history,
+    })
