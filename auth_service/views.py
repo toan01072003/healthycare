@@ -39,7 +39,7 @@ def login_view(request):
         try:
             user = User.objects.get(email=email)
             if user.check_password(password):
-                if user.status != 'approved':
+                if user.status != 'approved' and not (user.is_staff or user.role == 'admin'):
                     return JsonResponse({'error': 'Tài khoản chưa được duyệt'}, status=403)
 
                 # Allow login for any role so that staff accounts created via the
