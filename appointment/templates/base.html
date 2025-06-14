@@ -32,6 +32,9 @@
             <span class="navbar-text text-light me-3">👨‍⚕️ {{ request.user.email }}</span>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="/auth/profile/">👤 Hồ sơ</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">🚪 Đăng xuất</a>
           </li>
         </ul>
