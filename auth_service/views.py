@@ -15,7 +15,8 @@ def register_view(request):
         password = data.get('password')
         role = data.get('role', 'patient')
 
-        if role != 'patient':
+        allowed_roles = ['patient', 'doctor', 'nurse', 'lab_staff']
+        if role not in allowed_roles:
             return JsonResponse({'error': 'You are not allowed to register as ' + role}, status=403)
 
         if User.objects.filter(email=email).exists():
@@ -40,8 +41,10 @@ def login_view(request):
             if user.check_password(password):
                 if user.status != 'approved':
                     return JsonResponse({'error': 'Tài khoản chưa được duyệt'}, status=403)
-                if user.role not in ['patient', 'doctor']:
-                    return JsonResponse({'error': 'Chỉ bệnh nhân và bác sĩ được phép đăng nhập'}, status=403)
+
+                # Allow login for any role so that staff accounts created via the
+                # admin site behave like normal accounts.  Views can still
+                # restrict access based on ``request.user.role``.
 
                 login(request, user)
                 return JsonResponse({'message': 'Login successful', 'role': user.role})
