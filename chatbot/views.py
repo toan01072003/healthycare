@@ -1,18 +1,26 @@
 # chatbot/views.py
 from django.shortcuts import render, redirect
 from .forms import ChatForm
-from .logic.predictor_bert import predict_disease_from_text  # <== THAY ĐỔI DUY NHẤT
+try:
+    from .logic.predictor_bert import predict_disease_from_text  # noqa: F401
+except Exception:
+    # When heavy ML dependencies like torch are missing, provide a dummy
+    # implementation so that tests and lightweight environments can still
+    # import this module without errors.
+    def predict_disease_from_text(text):
+        return []
 from django.http import JsonResponse
-import joblib
+try:
+    import joblib
+except Exception:  # pragma: no cover - optional dependency
+    joblib = None
 import os
 from .logic.dummy_objs import DummyEncoder
-
-import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SYMPTOM_ENCODER_PATH = os.path.join(BASE_DIR, "logic", "symptom_encoder.pkl")
 
-if os.path.exists(SYMPTOM_ENCODER_PATH):
+if os.path.exists(SYMPTOM_ENCODER_PATH) and joblib is not None:
     symptom_encoder = joblib.load(SYMPTOM_ENCODER_PATH)
 else:
     symptom_encoder = DummyEncoder()
@@ -57,7 +65,10 @@ from .forms import ChatForm
 from appointment.models import Appointment
 from user_profile.models import UserProfile
 from django.utils import timezone
-import dateparser
+try:
+    import dateparser
+except Exception:  # pragma: no cover - optional dependency
+    dateparser = None
 
 def appointment_chatbot_view(request):
     state = request.session.get("appointment_state", {"step": 0})
@@ -74,8 +85,8 @@ def appointment_chatbot_view(request):
         if state.get("step") == "confirm":
             if message.lower() in ["yes", "y"]:
                 doctor = UserProfile.objects.get(user_id=state["doctor_id"])
-                dt = dateparser.parse(state["date_time"])
-                if timezone.is_naive(dt):
+                dt = dateparser.parse(state["date_time"]) if dateparser else None
+                if dt and timezone.is_naive(dt):
                     dt = timezone.make_aware(dt, timezone.get_current_timezone())
 
                 Appointment.objects.create(
@@ -91,8 +102,55 @@ def appointment_chatbot_view(request):
                 response = "❌ Appointment canceled. Please enter a new request or select again."
                 state = {"step": 0}
 
+        elif date_input and doctor_input:
+            try:
+                dt = timezone.datetime.fromisoformat(date_input)
+            except (TypeError, ValueError):
+                dt = None
+
+            matched_doctor = UserProfile.objects.filter(full_name=doctor_input).first()
+
+            if dt and timezone.is_naive(dt):
+                dt = timezone.make_aware(dt, timezone.get_current_timezone())
+
+            if dt and matched_doctor:
+                if dt < timezone.now():
+                    response = "⚠️ The selected time is in the past. Please choose a future time."
+                elif dt.hour < 8 or dt.hour > 17:
+                    response = "🕗 Appointments are allowed from 08:00 to 17:00 only."
+                elif Appointment.objects.filter(doctor=matched_doctor.user, date_time=dt).exists():
+                    selected_date = dt.date()
+                    available_slots = []
+                    for hour in range(8, 18):
+                        slot_time = timezone.make_aware(
+                            timezone.datetime.combine(selected_date, timezone.datetime.min.time()).replace(hour=hour)
+                        )
+                        if not Appointment.objects.filter(doctor=matched_doctor.user, date_time=slot_time).exists():
+                            available_slots.append(slot_time.strftime("%H:%M"))
+
+                    response = (
+                        f"❌ Dr. {matched_doctor.full_name} is not available at {dt.strftime('%H:%M %d/%m/%Y')}.\n"
+                        f"🕒 Available time slots on {selected_date.strftime('%d/%m/%Y')}: "
+                        + ", ".join(available_slots) +
+                        "\n👉 Please type a new time from the available slots."
+                    )
+                    state["step"] = 0
+                else:
+                    state = {
+                        "step": "confirm",
+                        "doctor_id": str(matched_doctor.user.id),
+                        "doctor_name": matched_doctor.full_name,
+                        "date_time": dt.isoformat()
+                    }
+                    response = f"🔔 Do you confirm booking with Dr. {matched_doctor.full_name} at {dt.strftime('%H:%M on %d/%m/%Y')}? (yes/no)"
+            else:
+                state["step"] = 1
+                response = "📅 Please enter the date and doctor for your appointment."
+
         elif message:
-            dt = dateparser.parse(message, settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': timezone.now()})
+            dt = None
+            if dateparser:
+                dt = dateparser.parse(message, settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': timezone.now()})
             matched_doctor = None
 
             for doc in UserProfile.objects.filter(user__role="doctor"):
@@ -129,7 +187,7 @@ def appointment_chatbot_view(request):
                 else:
                     state = {
                         "step": "confirm",
-                        "doctor_id": matched_doctor.user.id,
+                        "doctor_id": str(matched_doctor.user.id),
                         "doctor_name": matched_doctor.full_name,
                         "date_time": dt.isoformat()
                     }
