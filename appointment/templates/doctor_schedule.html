@@ -15,7 +15,6 @@
     <p>SĐT: {{ a.patient_profile.phone_number }}</p>
     <p>Giới tính: {{ a.patient_profile.gender }}</p>
     <p>Ngày sinh: {{ a.patient_profile.date_of_birth }}</p>
-
     <form method="post" action="{% url 'update-appointment' a.id %}">
       {% csrf_token %}
       <label for="status">Cập nhật trạng thái:</label>
@@ -30,6 +29,16 @@
       <br>
       <button type="submit" class="btn btn-primary">💾 Lưu thay đổi</button>
     </form>
+    {% if a.status == 'pending' %}
+    <form method="post" action="{% url 'respond-appointment' a.id 'accept' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success btn-sm mt-2">Chấp nhận</button>
+    </form>
+    <form method="post" action="{% url 'respond-appointment' a.id 'reject' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-sm mt-2">Từ chối</button>
+    </form>
+    {% endif %}
   </div>
 {% empty %}
   <div class="alert alert-info">Không có lịch khám nào.</div>
