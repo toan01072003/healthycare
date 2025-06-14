@@ -48,9 +48,6 @@ def chatbot_view(request):
         if form.is_valid():
             message = form.cleaned_data["message"]
             predictions = predict_disease_from_text(message)  # <== CHỈ ĐỔI DÒNG NÀY
-
-<<<<<<< HEAD
-            predictions = predict_disease_from_text(message)
             reply = "Tôi dự đoán bạn có thể mắc:\n"
             for i, p in enumerate(predictions):
                 reply += f"{i+1}. {p['disease']} ({p['confidence']}%)\n"
@@ -59,16 +56,6 @@ def chatbot_view(request):
                     reply += f"📌 Mô tả: {info['description']}\n"
                     reply += f"👨‍⚕️ Chuyên khoa: {info['specialist']}\n"
                     reply += f"💊 Hướng điều trị: {', '.join(info['treatments'])}\n\n"
-
-=======
-            reply = "Tôi dự đoán bạn có thể mắc:\n" + "\n".join(
-                [
-                    f"{i+1}. {p['disease']} ({p['confidence']}%)"
-                    for i, p in enumerate(predictions)
-                ]
-            )
->>>>>>> f6704b7f0ac394cce043d83150c00646a87e4181
-
             chat_history.append(("Bạn", message))
             chat_history.append(("AI", reply))
             request.session["chat_history"] = chat_history
