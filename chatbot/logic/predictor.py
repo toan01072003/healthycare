@@ -1,9 +1,18 @@
 # chatbot/logic/predictor.py
 
 import joblib
+import os
+from .dummy_objs import DummyModel, DummyEncoder
 
-model = joblib.load("chatbot/logic/chatbot_model.pkl")
-symptom_encoder = joblib.load("chatbot/logic/symptom_encoder.pkl")
+MODEL_PATH = "chatbot/logic/chatbot_model.pkl"
+ENCODER_PATH = "chatbot/logic/symptom_encoder.pkl"
+
+if os.path.exists(MODEL_PATH) and os.path.exists(ENCODER_PATH):
+    model = joblib.load(MODEL_PATH)
+    symptom_encoder = joblib.load(ENCODER_PATH)
+else:
+    model = DummyModel()
+    symptom_encoder = DummyEncoder()
 
 def predict_disease(symptom_list):
     cleaned = [s.strip().lower() for s in symptom_list]
