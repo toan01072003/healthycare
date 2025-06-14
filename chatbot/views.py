@@ -102,6 +102,51 @@ def appointment_chatbot_view(request):
                 response = "❌ Appointment canceled. Please enter a new request or select again."
                 state = {"step": 0}
 
+        elif date_input and doctor_input:
+            try:
+                dt = timezone.datetime.fromisoformat(date_input)
+            except (TypeError, ValueError):
+                dt = None
+
+            matched_doctor = UserProfile.objects.filter(full_name=doctor_input).first()
+
+            if dt and timezone.is_naive(dt):
+                dt = timezone.make_aware(dt, timezone.get_current_timezone())
+
+            if dt and matched_doctor:
+                if dt < timezone.now():
+                    response = "⚠️ The selected time is in the past. Please choose a future time."
+                elif dt.hour < 8 or dt.hour > 17:
+                    response = "🕗 Appointments are allowed from 08:00 to 17:00 only."
+                elif Appointment.objects.filter(doctor=matched_doctor.user, date_time=dt).exists():
+                    selected_date = dt.date()
+                    available_slots = []
+                    for hour in range(8, 18):
+                        slot_time = timezone.make_aware(
+                            timezone.datetime.combine(selected_date, timezone.datetime.min.time()).replace(hour=hour)
+                        )
+                        if not Appointment.objects.filter(doctor=matched_doctor.user, date_time=slot_time).exists():
+                            available_slots.append(slot_time.strftime("%H:%M"))
+
+                    response = (
+                        f"❌ Dr. {matched_doctor.full_name} is not available at {dt.strftime('%H:%M %d/%m/%Y')}.\n"
+                        f"🕒 Available time slots on {selected_date.strftime('%d/%m/%Y')}: "
+                        + ", ".join(available_slots) +
+                        "\n👉 Please type a new time from the available slots."
+                    )
+                    state["step"] = 0
+                else:
+                    state = {
+                        "step": "confirm",
+                        "doctor_id": str(matched_doctor.user.id),
+                        "doctor_name": matched_doctor.full_name,
+                        "date_time": dt.isoformat()
+                    }
+                    response = f"🔔 Do you confirm booking with Dr. {matched_doctor.full_name} at {dt.strftime('%H:%M on %d/%m/%Y')}? (yes/no)"
+            else:
+                state["step"] = 1
+                response = "📅 Please enter the date and doctor for your appointment."
+
         elif message:
             dt = None
             if dateparser:
@@ -142,7 +187,7 @@ def appointment_chatbot_view(request):
                 else:
                     state = {
                         "step": "confirm",
-                        "doctor_id": matched_doctor.user.id,
+                        "doctor_id": str(matched_doctor.user.id),
                         "doctor_name": matched_doctor.full_name,
                         "date_time": dt.isoformat()
                     }
