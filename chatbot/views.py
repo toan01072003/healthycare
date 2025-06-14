@@ -1,18 +1,26 @@
 # chatbot/views.py
 from django.shortcuts import render, redirect
 from .forms import ChatForm
-from .logic.predictor_bert import predict_disease_from_text  # <== THAY ĐỔI DUY NHẤT
+try:
+    from .logic.predictor_bert import predict_disease_from_text  # noqa: F401
+except Exception:
+    # When heavy ML dependencies like torch are missing, provide a dummy
+    # implementation so that tests and lightweight environments can still
+    # import this module without errors.
+    def predict_disease_from_text(text):
+        return []
 from django.http import JsonResponse
-import joblib
+try:
+    import joblib
+except Exception:  # pragma: no cover - optional dependency
+    joblib = None
 import os
 from .logic.dummy_objs import DummyEncoder
-
-import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SYMPTOM_ENCODER_PATH = os.path.join(BASE_DIR, "logic", "symptom_encoder.pkl")
 
-if os.path.exists(SYMPTOM_ENCODER_PATH):
+if os.path.exists(SYMPTOM_ENCODER_PATH) and joblib is not None:
     symptom_encoder = joblib.load(SYMPTOM_ENCODER_PATH)
 else:
     symptom_encoder = DummyEncoder()
@@ -57,7 +65,10 @@ from .forms import ChatForm
 from appointment.models import Appointment
 from user_profile.models import UserProfile
 from django.utils import timezone
-import dateparser
+try:
+    import dateparser
+except Exception:  # pragma: no cover - optional dependency
+    dateparser = None
 
 def appointment_chatbot_view(request):
     state = request.session.get("appointment_state", {"step": 0})
@@ -74,8 +85,8 @@ def appointment_chatbot_view(request):
         if state.get("step") == "confirm":
             if message.lower() in ["yes", "y"]:
                 doctor = UserProfile.objects.get(user_id=state["doctor_id"])
-                dt = dateparser.parse(state["date_time"])
-                if timezone.is_naive(dt):
+                dt = dateparser.parse(state["date_time"]) if dateparser else None
+                if dt and timezone.is_naive(dt):
                     dt = timezone.make_aware(dt, timezone.get_current_timezone())
 
                 Appointment.objects.create(
@@ -92,7 +103,9 @@ def appointment_chatbot_view(request):
                 state = {"step": 0}
 
         elif message:
-            dt = dateparser.parse(message, settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': timezone.now()})
+            dt = None
+            if dateparser:
+                dt = dateparser.parse(message, settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': timezone.now()})
             matched_doctor = None
 
             for doc in UserProfile.objects.filter(user__role="doctor"):
