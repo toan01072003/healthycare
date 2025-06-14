@@ -7,4 +7,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('home/', views.home_view, name='home'),  # Thêm route home tại đây
     path('profile/', views.profile_view, name='profile'),
+    path('nurse/', views.nurse_home_view, name='nurse-home'),
+    path('lab/', views.lab_home_view, name='lab-home'),
 ]

@@ -61,7 +61,23 @@ def login_view(request):
 def home_view(request):
     if request.user.role == 'doctor':
         return redirect('/doctor/schedule/')
+    if request.user.role == 'nurse':
+        return redirect('/auth/nurse/')
+    if request.user.role == 'lab_staff':
+        return redirect('/auth/lab/')
     return render(request, 'home.html')
+
+
+@login_required
+def nurse_home_view(request):
+    """Simple landing page for nurses"""
+    return render(request, 'nurse_home.html')
+
+
+@login_required
+def lab_home_view(request):
+    """Landing page for lab staff"""
+    return render(request, 'lab_home.html')
 
 
 @login_required
