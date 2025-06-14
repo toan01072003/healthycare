@@ -25,3 +25,4 @@ class AuthServiceTests(APITestCase):
                 self.assertEqual(login_response.json().get('role'), role)
 
 
+

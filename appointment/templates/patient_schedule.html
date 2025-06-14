@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">📅 Lịch khám của tôi</h2>
+
+<h4>Sắp tới</h4>
+{% for a in upcoming %}
+  <div class="card mb-3 p-3 shadow-sm">
+    <h5>{{ a.date_time|date:"H:i - d/m/Y" }} với BS {{ a.doctor_profile.full_name }}</h5>
+    <p><strong>Trạng thái:</strong> {{ a.get_status_display }}</p>
+    <p><strong>Lý do khám:</strong> {{ a.reason }}</p>
+    <p><strong>Ghi chú:</strong> {{ a.notes|default:"(Không có)" }}</p>
+  </div>
+{% empty %}
+  <div class="alert alert-info">Không có lịch khám nào.</div>
+{% endfor %}
+
+<h4 class="mt-4">Lịch sử</h4>
+{% for a in history %}
+  <div class="card mb-3 p-3 shadow-sm">
+    <h5>{{ a.date_time|date:"H:i - d/m/Y" }} với BS {{ a.doctor_profile.full_name }}</h5>
+    <p><strong>Trạng thái:</strong> {{ a.get_status_display }}</p>
+    <p><strong>Lý do khám:</strong> {{ a.reason }}</p>
+    <p><strong>Ghi chú:</strong> {{ a.notes|default:"(Không có)" }}</p>
+  </div>
+{% empty %}
+  <div class="alert alert-info">Không có lịch sử.</div>
+{% endfor %}
+{% endblock %}
