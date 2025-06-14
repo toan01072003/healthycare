@@ -7,6 +7,7 @@ class AuthServiceTests(APITestCase):
         register_url = reverse('register')
         login_url = reverse('login')
 
+
         for role in ['patient', 'doctor', 'nurse', 'lab_staff']:
             with self.subTest(role=role):
                 email = f'{role}@example.com'
@@ -22,4 +23,5 @@ class AuthServiceTests(APITestCase):
                 login_response = self.client.post(login_url, {'email': email, 'password': 'pass1234'}, format='json')
                 self.assertEqual(login_response.status_code, 200)
                 self.assertEqual(login_response.json().get('role'), role)
+
 
