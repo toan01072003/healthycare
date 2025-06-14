@@ -31,3 +31,5 @@ class AppointmentChatbotTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Do you confirm', response.context['bot_message'])
 
+
+
