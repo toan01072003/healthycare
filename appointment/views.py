@@ -109,6 +109,10 @@ def create_appointment_from_chatbot(request):
     date_time_str = data.get('date_time')
     reason = data.get('reason', 'Đặt lịch qua chatbot')
 
+    # Chỉ cho phép bệnh nhân đặt lịch qua chatbot
+    if request.user.role != 'patient':
+        return Response({"error": "Chỉ bệnh nhân mới được phép đặt lịch."}, status=403)
+
     try:
         doctor_profile = UserProfile.objects.get(full_name__icontains=doctor_name, user__role='doctor')
         doctor = doctor_profile.user
@@ -118,6 +122,10 @@ def create_appointment_from_chatbot(request):
     date_time = parse_datetime(date_time_str)
     if not date_time:
         return Response({"error": "Thời gian không hợp lệ"}, status=400)
+
+    # Không cho phép bác sĩ và bệnh nhân trùng nhau
+    if request.user == doctor:
+        return Response({"error": "Bác sĩ và bệnh nhân không được trùng nhau."}, status=400)
 
     # Tạo lịch hẹn
     appointment = Appointment.objects.create(
