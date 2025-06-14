@@ -40,8 +40,10 @@ def login_view(request):
             if user.check_password(password):
                 if user.status != 'approved':
                     return JsonResponse({'error': 'Tài khoản chưa được duyệt'}, status=403)
-                if user.role not in ['patient', 'doctor']:
-                    return JsonResponse({'error': 'Chỉ bệnh nhân và bác sĩ được phép đăng nhập'}, status=403)
+
+                # Allow login for any role so that staff accounts created via the
+                # admin site behave like normal accounts.  Views can still
+                # restrict access based on ``request.user.role``.
 
                 login(request, user)
                 return JsonResponse({'message': 'Login successful', 'role': user.role})
