@@ -15,7 +15,8 @@ def register_view(request):
         password = data.get('password')
         role = data.get('role', 'patient')
 
-        if role != 'patient':
+        allowed_roles = ['patient', 'doctor', 'nurse', 'lab_staff']
+        if role not in allowed_roles:
             return JsonResponse({'error': 'You are not allowed to register as ' + role}, status=403)
 
         if User.objects.filter(email=email).exists():
