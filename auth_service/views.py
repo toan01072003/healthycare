@@ -48,7 +48,7 @@ def login_view(request):
             else:
                 return JsonResponse({'error': 'Sai mật khẩu'}, status=401)
 
-        except User.DoesNotExist:
+        except (User.DoesNotExist, ValueError):
             return JsonResponse({'error': 'Không tìm thấy tài khoản'}, status=404)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
