@@ -1,5 +1,6 @@
 # chatbot/views.py
-from .logic.knowledge_utils import get_disease_info
+# from .logic.knowledge_utils import get_disease_info
+from .logic.neo4j_utils import get_disease_info_neo4j as get_disease_info
 
 from django.shortcuts import render, redirect
 from .forms import ChatForm

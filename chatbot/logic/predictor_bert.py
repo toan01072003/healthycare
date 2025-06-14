@@ -56,4 +56,5 @@ def predict_disease_from_text(text):
         reverse=True
     )[:5]
 
-    return [{"disease": d, "confidence": round(p * 100, 2)} for d, p in topk if p > 0.01]
+    return [{"disease": d, "confidence": round(p * 100, 2)} for d, p in topk[:3]]
+

@@ -1,0 +1,26 @@
+{
+  "Migraine": {
+    "description": "Migraine is a neurological condition that causes intense headaches, often with nausea or sensitivity to light.",
+    "symptoms": ["headache", "nausea", "sensitivity to light", "blurred vision"],
+    "specialist": "Neurologist",
+    "treatments": ["Pain relievers", "Triptans", "Avoiding triggers", "Rest in a quiet, dark room"]
+  },
+  "Flu": {
+    "description": "Flu (influenza) is a viral infection that affects the respiratory system.",
+    "symptoms": ["fever", "cough", "fatigue", "body ache"],
+    "specialist": "General Practitioner",
+    "treatments": ["Antiviral drugs", "Rest", "Hydration", "Fever reducers"]
+  },
+  "Asthma": {
+    "description": "Asthma is a chronic condition that affects the airways in the lungs.",
+    "symptoms": ["wheezing", "shortness of breath", "chest tightness"],
+    "specialist": "Pulmonologist",
+    "treatments": ["Inhalers", "Bronchodilators", "Avoiding allergens"]
+  },
+  "Diabetes": {
+    "description": "Diabetes is a metabolic disorder that causes high blood sugar.",
+    "symptoms": ["frequent urination", "increased thirst", "fatigue"],
+    "specialist": "Endocrinologist",
+    "treatments": ["Insulin", "Diet management", "Exercise"]
+  }
+}
