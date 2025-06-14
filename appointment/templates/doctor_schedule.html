@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 <h2 class="mb-4">📅 Lịch khám của bạn</h2>
+<form method="get" action="{% url 'search-medical-history' %}" class="mb-4">
+  <div class="input-group">
+    <input type="text" name="q" class="form-control" placeholder="Nhập tên bệnh nhân">
+    <button type="submit" class="btn btn-primary">Tìm hồ sơ</button>
+  </div>
+</form>
 
 <h4>Sắp tới</h4>
 {% for a in upcoming %}
