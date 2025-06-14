@@ -104,19 +104,23 @@ def appointment_chatbot_view(request):
         if state.get("step") == "confirm":
             if message.lower() in ["yes", "y"]:
                 doctor = UserProfile.objects.get(user_id=state["doctor_id"])
-                dt = dateparser.parse(state["date_time"]) if dateparser else None
-                if dt and timezone.is_naive(dt):
-                    dt = timezone.make_aware(dt, timezone.get_current_timezone())
+                if doctor.user == request.user:
+                    response = "❌ You cannot book an appointment with yourself."
+                    state = {"step": 0}
+                else:
+                    dt = dateparser.parse(state["date_time"]) if dateparser else None
+                    if dt and timezone.is_naive(dt):
+                        dt = timezone.make_aware(dt, timezone.get_current_timezone())
 
-                Appointment.objects.create(
-                    patient=request.user,
-                    doctor=doctor.user,
-                    date_time=dt,
-                    reason="Confirmed via chatbot",
-                    status="pending"
-                )
-                response = f"✅ Your appointment with Dr. {doctor.full_name} at {dt.strftime('%H:%M on %d/%m/%Y')} has been confirmed."
-                state = {"step": 0}
+                    Appointment.objects.create(
+                        patient=request.user,
+                        doctor=doctor.user,
+                        date_time=dt,
+                        reason="Confirmed via chatbot",
+                        status="pending"
+                    )
+                    response = f"✅ Your appointment with Dr. {doctor.full_name} at {dt.strftime('%H:%M on %d/%m/%Y')} has been confirmed."
+                    state = {"step": 0}
             else:
                 response = "❌ Appointment canceled. Please enter a new request or select again."
                 state = {"step": 0}
