@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">🩺 Hồ sơ bệnh án của tôi</h2>
+{% for r in records %}
+  <div class="card mb-3 p-3 shadow-sm">
+    <h5>{{ r.get_type_display }} - {{ r.date_uploaded|date:"H:i d/m/Y" }}</h5>
+    <p><strong>Tóm tắt:</strong> {{ r.summary }}</p>
+    <a href="{{ r.file_url }}" target="_blank">📄 Xem file</a>
+    {% if request.user.role == 'doctor' or request.user == r.uploaded_by %}
+      <a href="{% url 'update-medical-record' r.id %}" class="btn btn-sm btn-primary ms-2">Sửa</a>
+    {% endif %}
+  </div>
+{% empty %}
+  <div class="alert alert-info">Không có hồ sơ.</div>
+{% endfor %}
+{% endblock %}

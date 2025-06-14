@@ -20,3 +20,4 @@ class MedicalRecord(models.Model):
     type = models.CharField(max_length=20, choices=RECORD_TYPE_CHOICES)
     summary = models.TextField()
     date_uploaded = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
