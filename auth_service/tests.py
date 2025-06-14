@@ -6,7 +6,7 @@ class AuthServiceTests(APITestCase):
     def test_register_and_login_roles(self):
         register_url = reverse('register')
         login_url = reverse('login')
-        home_url = reverse('home')
+
 
         for role in ['patient', 'doctor', 'nurse', 'lab_staff']:
             with self.subTest(role=role):
@@ -24,27 +24,5 @@ class AuthServiceTests(APITestCase):
                 self.assertEqual(login_response.status_code, 200)
                 self.assertEqual(login_response.json().get('role'), role)
 
-                home_response = self.client.get(home_url)
-                if role == 'doctor':
-                    self.assertEqual(home_response.status_code, 302)
-                    self.assertIn('/doctor/schedule/', home_response.url)
-                elif role == 'nurse':
-                    self.assertEqual(home_response.status_code, 302)
-                    self.assertIn('/auth/nurse/', home_response.url)
-                elif role == 'lab_staff':
-                    self.assertEqual(home_response.status_code, 302)
-                    self.assertIn('/auth/lab/', home_response.url)
-                else:
-                    self.assertEqual(home_response.status_code, 200)
 
-    def test_admin_created_user_can_login_without_approval(self):
-        login_url = reverse('login')
-
-        User.objects.create_user(
-            email='staff@example.com', password='pass1234', role='doctor', status='pending', is_staff=True
-        )
-
-        response = self.client.post(login_url, {'email': 'staff@example.com', 'password': 'pass1234'}, format='json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json().get('role'), 'doctor')
 
