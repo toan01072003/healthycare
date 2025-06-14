@@ -1,7 +1,7 @@
 # chatbot/views.py
 from django.shortcuts import render, redirect
 from .forms import ChatForm
-from .logic.predictor import predict_disease
+from .logic.predictor_bert import predict_disease_from_text  # <== THAY ĐỔI DUY NHẤT
 from django.http import JsonResponse
 import joblib
 import os
@@ -18,10 +18,9 @@ all_symptoms = symptom_encoder.classes_
 def suggest_symptoms(request):
     query = request.GET.get("q", "").lower()
     matches = [s for s in all_symptoms if query in s.lower()]
-    return JsonResponse({"suggestions": matches[:10]})  # Giới hạn 10 gợi ý
+    return JsonResponse({"suggestions": matches[:10]})
 
 
-# Lưu hội thoại trong session (tạm thời, đơn giản)
 def chatbot_view(request):
     chat_history = request.session.get("chat_history", [])
 
@@ -29,9 +28,8 @@ def chatbot_view(request):
         form = ChatForm(request.POST)
         if form.is_valid():
             message = form.cleaned_data["message"]
-            predictions = predict_disease(message.split(","))  # xử lý triệu chứng dạng list
+            predictions = predict_disease_from_text(message)  # <== CHỈ ĐỔI DÒNG NÀY
 
-            # tạo phản hồi
             reply = "Tôi dự đoán bạn có thể mắc:\n" + "\n".join(
                 [f"{i+1}. {p['disease']} ({p['confidence']}%)" for i, p in enumerate(predictions)]
             )
@@ -47,6 +45,7 @@ def chatbot_view(request):
         "form": form,
         "chat_history": chat_history
     })
+
 
 
 
