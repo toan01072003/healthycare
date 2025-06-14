@@ -25,7 +25,44 @@ def my_medical_history_view(request):
         MedicalRecord.objects.filter(patient=request.user)
         .order_by("-date_uploaded")
     )
-    return render(request, "medical_record/my_history.html", {"records": records})
+    return render(
+        request,
+        "medical_record/my_history.html",
+        {"records": records},
+    )
+
+
+@login_required
+def add_medical_record_view(request):
+    """Allow a patient to add a new medical record."""
+    if request.user.role != "patient":
+        messages.error(request, "Bạn không có quyền truy cập.")
+        return redirect("home")
+
+    if request.method == "POST":
+        file_url = request.POST.get("file_url", "").strip()
+        summary = request.POST.get("summary", "")
+        rtype = request.POST.get("type", "")
+        if rtype not in dict(MedicalRecord.RECORD_TYPE_CHOICES):
+            messages.error(request, "Loại hồ sơ không hợp lệ.")
+        elif not file_url or not summary:
+            messages.error(request, "Vui lòng điền đầy đủ thông tin.")
+        else:
+            MedicalRecord.objects.create(
+                patient=request.user,
+                uploaded_by=request.user,
+                file_url=file_url,
+                type=rtype,
+                summary=summary,
+            )
+            messages.success(request, "Đã thêm hồ sơ.")
+            return redirect("my-medical-history")
+
+    return render(
+        request,
+        "medical_record/add_record.html",
+        {"record_types": MedicalRecord.RECORD_TYPE_CHOICES},
+    )
 
 
 @login_required
