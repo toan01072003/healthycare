@@ -17,11 +17,12 @@ def doctor_schedule_view(request):
         messages.error(request, "Bạn không có quyền truy cập.")
         return redirect('home')
 
-    appointments = Appointment.objects.filter(doctor=request.user).order_by('date_time')
-    patient_profiles = {a.patient.id: UserProfile.objects.filter(user=a.patient).first() for a in appointments}
+    appointments = Appointment.objects.filter(doctor=request.user).order_by('date_time').select_related('patient')
+    for appt in appointments:
+        appt.patient_profile = UserProfile.objects.filter(user=appt.patient).first()
+
     return render(request, 'doctor_schedule.html', {
         'appointments': appointments,
-        'patient_profiles': patient_profiles,
     })
 
 @login_required
