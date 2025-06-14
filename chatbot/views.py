@@ -7,7 +7,10 @@ import joblib
 import os
 from .logic.dummy_objs import DummyEncoder
 
-SYMPTOM_ENCODER_PATH = "chatbot/logic/symptom_encoder.pkl"
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SYMPTOM_ENCODER_PATH = os.path.join(BASE_DIR, "logic", "symptom_encoder.pkl")
 
 if os.path.exists(SYMPTOM_ENCODER_PATH):
     symptom_encoder = joblib.load(SYMPTOM_ENCODER_PATH)

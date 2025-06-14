@@ -47,6 +47,9 @@ def predict_disease_from_text(text):
         outputs = model(**inputs)
         probs = torch.softmax(outputs, dim=1).cpu().numpy()[0]
 
+    print("🔍 INPUT:", text)
+    print("🔢 PROBS:", dict(zip(label_encoder.classes_, probs)))  # DEBUG
+
     topk = sorted(
         zip(label_encoder.classes_, probs),
         key=lambda x: x[1],
