@@ -9,6 +9,10 @@
     <p><strong>Trạng thái:</strong> {{ a.get_status_display }}</p>
     <p><strong>Lý do khám:</strong> {{ a.reason }}</p>
     <p><strong>Ghi chú:</strong> {{ a.notes|default:"(Không có)" }}</p>
+    <form method="post" action="{% url 'cancel-appointment' a.id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-sm mt-2">Huỷ lịch</button>
+    </form>
   </div>
 {% empty %}
   <div class="alert alert-info">Không có lịch khám nào.</div>

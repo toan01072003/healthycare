@@ -183,3 +183,29 @@ def patient_schedule_view(request):
         'upcoming': upcoming,
         'history': history,
     })
+
+
+@login_required
+def cancel_appointment(request, appointment_id):
+    """Allow a patient to cancel their appointment."""
+    appointment = get_object_or_404(Appointment, id=appointment_id, patient=request.user)
+    if request.method == 'POST':
+        appointment.status = 'cancelled'
+        appointment.save()
+        messages.success(request, "Đã hủy lịch hẹn.")
+    return redirect('patient-schedule')
+
+
+@login_required
+def respond_appointment(request, appointment_id, action):
+    """Doctor accepts or rejects an appointment."""
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=request.user)
+    if request.method == 'POST':
+        if action == 'accept':
+            appointment.status = 'confirmed'
+            messages.success(request, "Đã chấp nhận lịch hẹn.")
+        elif action == 'reject':
+            appointment.status = 'cancelled'
+            messages.success(request, "Đã từ chối lịch hẹn.")
+        appointment.save()
+    return redirect('doctor-schedule')
