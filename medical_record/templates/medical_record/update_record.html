@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">Cập nhật hồ sơ</h2>
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label class="form-label">Loại</label>
+    <select name="type" class="form-select">
+      {% for key,val in record.RECORD_TYPE_CHOICES %}
+        <option value="{{ key }}" {% if key == record.type %}selected{% endif %}>{{ val }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">File URL</label>
+    <input type="text" name="file_url" class="form-control" value="{{ record.file_url }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Tóm tắt</label>
+    <textarea name="summary" class="form-control">{{ record.summary }}</textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">💾 Lưu</button>
+</form>
+{% endblock %}
