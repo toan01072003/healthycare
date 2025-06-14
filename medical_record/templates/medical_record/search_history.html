@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">🩺 Tra cứu hồ sơ bệnh án</h2>
+<form method="get" class="mb-3">
+  <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Nhập tên bệnh nhân">
+  <button type="submit" class="btn btn-primary mt-2">Tìm kiếm</button>
+</form>
+{% for p in patients %}
+  <h4 class="mt-4">{{ p.full_name }}</h4>
+  {% for r in p.records %}
+    <div class="card mb-2 p-2 shadow-sm">
+      <h6>{{ r.get_type_display }} - {{ r.date_uploaded|date:"H:i d/m/Y" }}</h6>
+      <p><strong>Tóm tắt:</strong> {{ r.summary }}</p>
+      <a href="{{ r.file_url }}" target="_blank">📄 Xem file</a>
+      <a href="{% url 'update-medical-record' r.id %}" class="btn btn-sm btn-primary ms-2">Sửa</a>
+    </div>
+  {% empty %}
+    <p>Không có hồ sơ.</p>
+  {% endfor %}
+{% empty %}
+  {% if query %}
+    <div class="alert alert-info">Không tìm thấy bệnh nhân.</div>
+  {% endif %}
+{% endfor %}
+{% endblock %}
