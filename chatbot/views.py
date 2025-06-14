@@ -85,6 +85,15 @@ def appointment_chatbot_view(request):
     message = None
     response = ""
 
+    # Chỉ bệnh nhân mới được đặt lịch qua chatbot
+    if request.user.role != "patient":
+        return render(request, "appointment/chat_appointment.html", {
+            "form": ChatForm(),
+            "bot_message": "Chỉ bệnh nhân mới được phép đặt lịch.",
+            "step": 0,
+            "doctors": UserProfile.objects.filter(user__role="doctor")
+        })
+
     if request.method == "POST":
         form = ChatForm(request.POST)
         message = form.data.get("message", "").strip()
