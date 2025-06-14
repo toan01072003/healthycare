@@ -4,8 +4,15 @@ from .forms import ChatForm
 from .logic.predictor import predict_disease
 from django.http import JsonResponse
 import joblib
+import os
+from .logic.dummy_objs import DummyEncoder
 
-symptom_encoder = joblib.load("chatbot/logic/symptom_encoder.pkl")
+SYMPTOM_ENCODER_PATH = "chatbot/logic/symptom_encoder.pkl"
+
+if os.path.exists(SYMPTOM_ENCODER_PATH):
+    symptom_encoder = joblib.load(SYMPTOM_ENCODER_PATH)
+else:
+    symptom_encoder = DummyEncoder()
 all_symptoms = symptom_encoder.classes_
 
 def suggest_symptoms(request):
