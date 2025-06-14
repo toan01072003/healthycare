@@ -15,7 +15,8 @@ def register_view(request):
         password = data.get('password')
         role = data.get('role', 'patient')
 
-        if role != 'patient':
+        allowed_roles = ['patient', 'doctor', 'nurse', 'lab_staff']
+        if role not in allowed_roles:
             return JsonResponse({'error': 'You are not allowed to register as ' + role}, status=403)
 
         if User.objects.filter(email=email).exists():
@@ -38,10 +39,12 @@ def login_view(request):
         try:
             user = User.objects.get(email=email)
             if user.check_password(password):
-                if user.status != 'approved':
+                if user.status != 'approved' and not (user.is_staff or user.role == 'admin'):
                     return JsonResponse({'error': 'Tài khoản chưa được duyệt'}, status=403)
-                if user.role not in ['patient', 'doctor']:
-                    return JsonResponse({'error': 'Chỉ bệnh nhân và bác sĩ được phép đăng nhập'}, status=403)
+
+                # Allow login for any role so that staff accounts created via the
+                # admin site behave like normal accounts.  Views can still
+                # restrict access based on ``request.user.role``.
 
                 login(request, user)
                 return JsonResponse({'message': 'Login successful', 'role': user.role})
@@ -58,7 +61,23 @@ def login_view(request):
 def home_view(request):
     if request.user.role == 'doctor':
         return redirect('/doctor/schedule/')
+    if request.user.role == 'nurse':
+        return redirect('/auth/nurse/')
+    if request.user.role == 'lab_staff':
+        return redirect('/auth/lab/')
     return render(request, 'home.html')
+
+
+@login_required
+def nurse_home_view(request):
+    """Simple landing page for nurses"""
+    return render(request, 'nurse_home.html')
+
+
+@login_required
+def lab_home_view(request):
+    """Landing page for lab staff"""
+    return render(request, 'lab_home.html')
 
 
 @login_required
