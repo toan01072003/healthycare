@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from auth_service.models import User
 from user_profile.models import UserProfile
+from appointment.models import Appointment
 
 
 class AppointmentChatbotTests(APITestCase):
@@ -30,6 +31,15 @@ class AppointmentChatbotTests(APITestCase):
         })
         self.assertEqual(response.status_code, 200)
         self.assertIn('Do you confirm', response.context['bot_message'])
+
+        # Confirm the appointment
+        response = self.client.post(url, {'message': 'yes'})
+        self.assertEqual(response.status_code, 200)
+
+        appt = Appointment.objects.first()
+        self.assertIsNotNone(appt)
+        self.assertNotEqual(appt.patient_id, appt.doctor_id)
+        self.assertEqual(appt.doctor_id, self.doctor.id)
 
 
 
