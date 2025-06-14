@@ -62,6 +62,12 @@ def home_view(request):
 
 
 @login_required
+def profile_view(request):
+    """Render page for viewing or editing the logged in user's profile"""
+    return render(request, 'profile.html')
+
+
+@login_required
 def logout_view(request):
     logout(request)
     return redirect('/')

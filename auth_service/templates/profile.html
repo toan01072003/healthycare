@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Profile - SmartPHC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/auth/home/">SmartPHC</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/auth/home/">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link btn btn-danger text-white" href="/auth/logout/">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+    <h3>My Profile</h3>
+    <form id="profileForm" class="mt-3">
+        <input class="form-control mb-2" type="text" name="full_name" placeholder="Full Name" required>
+        <input class="form-control mb-2" type="date" name="date_of_birth" placeholder="Date of Birth" required>
+        <select class="form-control mb-2" name="gender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+        </select>
+        <input class="form-control mb-2" type="text" name="phone_number" placeholder="Phone Number" required>
+        <textarea class="form-control mb-2" name="address" placeholder="Address" required></textarea>
+        <input class="form-control mb-2" type="url" name="profile_photo" placeholder="Profile Photo URL">
+        <button class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+<!-- CSRF token -->
+<form style="display:none">{% csrf_token %}</form>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let hasProfile = false;
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function loadProfile() {
+    const res = await fetch('/api/user-profile/me/', {credentials: 'same-origin'});
+    if (res.ok) {
+        const data = await res.json();
+        hasProfile = true;
+        for (const [key, val] of Object.entries(data)) {
+            const el = document.querySelector(`[name="${key}"]`);
+            if (el) el.value = val;
+        }
+    }
+}
+
+loadProfile();
+
+document.getElementById('profileForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const payload = JSON.stringify(Object.fromEntries(form));
+    const method = hasProfile ? 'PUT' : 'POST';
+    const res = await fetch('/api/user-profile/me/', {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: payload,
+        credentials: 'same-origin'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        hasProfile = true;
+        alert('Profile saved');
+    } else {
+        alert(data.detail || 'Error saving profile');
+    }
+};
+</script>
+</body>
+</html>
