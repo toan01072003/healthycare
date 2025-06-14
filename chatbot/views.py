@@ -1,4 +1,6 @@
 # chatbot/views.py
+from .logic.knowledge_utils import get_disease_info
+
 from django.shortcuts import render, redirect
 from .forms import ChatForm
 try:
@@ -41,9 +43,16 @@ def chatbot_view(request):
             message = form.cleaned_data["message"]
             predictions = predict_disease_from_text(message)  # <== CHỈ ĐỔI DÒNG NÀY
 
-            reply = "Tôi dự đoán bạn có thể mắc:\n" + "\n".join(
-                [f"{i+1}. {p['disease']} ({p['confidence']}%)" for i, p in enumerate(predictions)]
-            )
+            predictions = predict_disease_from_text(message)
+            reply = "Tôi dự đoán bạn có thể mắc:\n"
+            for i, p in enumerate(predictions):
+                reply += f"{i+1}. {p['disease']} ({p['confidence']}%)\n"
+                info = get_disease_info(p['disease'])
+                if info:
+                    reply += f"📌 Mô tả: {info['description']}\n"
+                    reply += f"👨‍⚕️ Chuyên khoa: {info['specialist']}\n"
+                    reply += f"💊 Hướng điều trị: {', '.join(info['treatments'])}\n\n"
+
 
             chat_history.append(("Bạn", message))
             chat_history.append(("AI", reply))
