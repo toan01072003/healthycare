@@ -1,10 +1,14 @@
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from .models import User
 from django.views.decorators.csrf import csrf_exempt  # ✅ Giữ lại
 from django.contrib.auth import get_user_model
+from user_profile.models import UserProfile
+from vitals.models import VitalSigns
+from medical_record.models import MedicalRecord
 import json
 
 @csrf_exempt
@@ -72,6 +76,37 @@ def home_view(request):
 def nurse_home_view(request):
     """Simple landing page for nurses"""
     return render(request, 'nurse_home.html')
+
+
+@login_required
+def nurse_patient_list_view(request):
+    """Show all patients for nurses to manage."""
+    if request.user.role != 'nurse':
+        messages.error(request, "Bạn không có quyền truy cập.")
+        return redirect('home')
+
+    patients = UserProfile.objects.filter(user__role='patient').select_related('user').order_by('full_name')
+    return render(request, 'nurse_patient_list.html', {'patients': patients})
+
+
+@login_required
+def nurse_patient_detail_view(request, patient_id):
+    """Display details, vitals and medical records for a patient."""
+    if request.user.role != 'nurse':
+        messages.error(request, "Bạn không có quyền truy cập.")
+        return redirect('home')
+
+    patient = get_object_or_404(User, id=patient_id, role='patient')
+    profile = UserProfile.objects.filter(user=patient).first()
+    vitals = VitalSigns.objects.filter(patient=patient).order_by('-recorded_at')
+    records = MedicalRecord.objects.filter(patient=patient).order_by('-date_uploaded')
+    context = {
+        'patient': patient,
+        'profile': profile,
+        'vitals': vitals,
+        'records': records,
+    }
+    return render(request, 'nurse_patient_detail.html', context)
 
 
 @login_required

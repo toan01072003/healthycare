@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">Danh sách bệnh nhân</h2>
+<ul class="list-group">
+  {% for p in patients %}
+  <li class="list-group-item">
+    <a href="{% url 'nurse-patient-detail' p.user.id %}">{{ p.full_name }} - {{ p.user.email }}</a>
+  </li>
+  {% empty %}
+  <li class="list-group-item">Không có bệnh nhân.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

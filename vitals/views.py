@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth import get_user_model
+from user_profile.models import UserProfile
 
 # Create your views here.
 from .models import VitalSigns
@@ -69,4 +71,41 @@ def vital_detail_view(request, vital_id):
         return redirect("home")
 
     return render(request, "vitals/vital_detail.html", {"vital": vital})
+
+
+@login_required
+def add_vital_for_patient_view(request, patient_id):
+    """Allow a nurse to record vitals for a patient."""
+    if request.user.role != "nurse":
+        messages.error(request, "Bạn không có quyền truy cập.")
+        return redirect("home")
+
+    User = get_user_model()
+    patient = get_object_or_404(User, id=patient_id, role="patient")
+
+    if request.method == "POST":
+        bp = request.POST.get("blood_pressure", "").strip()
+        temp = request.POST.get("temperature")
+        hr = request.POST.get("heart_rate")
+        spo2 = request.POST.get("oxygen_saturation")
+        rr = request.POST.get("respiratory_rate")
+
+        if not all([bp, temp, hr, spo2, rr]):
+            messages.error(request, "Vui lòng điền đầy đủ thông tin.")
+        else:
+            VitalSigns.objects.create(
+                patient=patient,
+                recorded_by=request.user,
+                recorded_at=timezone.now(),
+                blood_pressure=bp,
+                temperature=temp,
+                heart_rate=hr,
+                oxygen_saturation=spo2,
+                respiratory_rate=rr,
+            )
+            messages.success(request, "Đã thêm chỉ số.")
+            return redirect("nurse-patient-detail", patient_id=patient_id)
+
+    profile = UserProfile.objects.filter(user=patient).first()
+    return render(request, "vitals/nurse_add_vital.html", {"patient": patient, "profile": profile})
 
