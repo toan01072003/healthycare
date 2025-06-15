@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">Chi tiết chỉ số</h2>
+<div class="card p-3 shadow-sm">
+  <h5>{{ vital.recorded_at|date:"H:i - d/m/Y" }}</h5>
+  <p><strong>Huyết áp:</strong> {{ vital.blood_pressure }}</p>
+  <p><strong>Nhiệt độ:</strong> {{ vital.temperature }}°C</p>
+  <p><strong>Nhịp tim:</strong> {{ vital.heart_rate }} bpm</p>
+  <p><strong>SpO2:</strong> {{ vital.oxygen_saturation }}%</p>
+  <p><strong>Nhịp thở:</strong> {{ vital.respiratory_rate }} lần/phút</p>
+</div>
+{% endblock %}
