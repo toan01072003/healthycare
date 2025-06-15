@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">📊 Chỉ số sức khỏe của tôi</h2>
+<a href="{% url 'add-vital-sign' %}" class="btn btn-success mb-3">➕ Thêm chỉ số</a>
+{% for v in vitals %}
+  <div class="card mb-3 p-3 shadow-sm position-relative">
+    <h5>{{ v.recorded_at|date:"H:i - d/m/Y" }}</h5>
+    <p><strong>Huyết áp:</strong> {{ v.blood_pressure }}</p>
+    <p><strong>Nhiệt độ:</strong> {{ v.temperature }}°C</p>
+    <p><strong>Nhịp tim:</strong> {{ v.heart_rate }} bpm</p>
+    <a href="{% url 'vital-detail' v.id %}" class="stretched-link"></a>
+  </div>
+{% empty %}
+  <div class="alert alert-info">Không có dữ liệu chỉ số.</div>
+{% endfor %}
+{% endblock %}

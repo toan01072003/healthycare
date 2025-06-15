@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">Thêm chỉ số sức khỏe</h2>
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label class="form-label">Huyết áp</label>
+    <input type="text" name="blood_pressure" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Nhiệt độ (&deg;C)</label>
+    <input type="number" step="0.1" name="temperature" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Nhịp tim (bpm)</label>
+    <input type="number" name="heart_rate" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">SpO2 (%)</label>
+    <input type="number" step="0.1" name="oxygen_saturation" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Nhịp thở (lần/phút)</label>
+    <input type="number" name="respiratory_rate" class="form-control">
+  </div>
+  <button type="submit" class="btn btn-primary">➕ Thêm</button>
+</form>
+{% endblock %}
