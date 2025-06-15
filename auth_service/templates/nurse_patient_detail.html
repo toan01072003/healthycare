@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">{{ profile.full_name }} ({{ patient.email }})</h2>
+<a href="{% url 'nurse-add-vital' patient.id %}" class="btn btn-success mb-4">➕ Thêm chỉ số</a>
+<h4>Chỉ số sức khỏe</h4>
+{% for v in vitals %}
+<div class="card mb-2 p-2">
+  <strong>{{ v.recorded_at|date:"H:i d/m/Y" }}</strong>
+  <p>Huyết áp: {{ v.blood_pressure }} | Nhiệt độ: {{ v.temperature }}°C | Nhịp tim: {{ v.heart_rate }} bpm</p>
+</div>
+{% empty %}
+<p>Không có chỉ số.</p>
+{% endfor %}
+<h4 class="mt-4">Hồ sơ bệnh án</h4>
+{% for r in records %}
+<div class="card mb-2 p-2">
+  <strong>{{ r.get_type_display }} - {{ r.date_uploaded|date:"H:i d/m/Y" }}</strong>
+  <p>{{ r.summary }}</p>
+  <a href="{{ r.file_url }}" target="_blank">📄 Xem file</a>
+</div>
+{% empty %}
+<p>Không có hồ sơ.</p>
+{% endfor %}
+{% endblock %}

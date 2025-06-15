@@ -30,6 +30,10 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'search-medical-history' %}">Tra cứu hồ sơ</a>
           </li>
+          {% elif request.user.role == "nurse" %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'nurse-patient-list' %}">Patients</a>
+          </li>
           {% else %}
           <li class="nav-item">
             <a class="nav-link" href="/api/chatbot/chat/">Symptom Checker</a>
