@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 from tqdm import tqdm
 
-# === Đường dẫn tới file JSON ===
 ONTOLOGY_PATH = Path("C:/Users/Toan/Documents/LapTrinh/do_all_terms.json")
 with open(ONTOLOGY_PATH, "r", encoding="utf-8") as f:
     all_data = json.load(f)
@@ -21,49 +20,22 @@ def bulk_import():
     with driver.session() as session:
         for batch in tqdm(chunked(all_data, BATCH_SIZE), total=(len(all_data)+BATCH_SIZE-1)//BATCH_SIZE, desc="🚀 Importing"):
             diseases, synonyms, parents, children = [], [], [], []
-            symptom_links, treatment_links, specialist_links = [], [], []
 
             for d in batch:
-                # Disease node
-                diseases.append({
-                    "id": d["id"],
-                    "name": d["name"],
-                    "definition": d.get("definition", "")
-                })
-
-                # Synonyms
+                diseases.append({"id": d["id"], "name": d["name"], "definition": d["definition"]})
                 for s in d.get("synonyms", []):
                     synonyms.append({"did": d["id"], "syn": s})
-
-                # IS_A parent
                 for p in d.get("parents", []):
                     parents.append({"src": d["id"], "pid": p["id"], "pname": p["name"]})
-
-                # IS_A child
                 for c in d.get("children", []):
                     children.append({"cid": c["id"], "cname": c["name"], "dst": d["id"]})
 
-                # Symptoms
-                for sym in d.get("symptoms", []):
-                    symptom_links.append({"did": d["id"], "symptom": sym})
-
-                # Treatments
-                for treat in d.get("treatments", []):
-                    treatment_links.append({"did": d["id"], "treatment": treat})
-
-                # Specialist
-                specialist = d.get("specialist")
-                if specialist:
-                    specialist_links.append({"did": d["id"], "specialist": specialist})
-
-            # Disease
             session.run("""
             UNWIND $diseases AS d
             MERGE (x:Disease {id: d.id})
             SET x.name = d.name, x.definition = d.definition
             """, diseases=diseases)
 
-            # Synonyms
             session.run("""
             UNWIND $synonyms AS row
             MERGE (s:Synonym {name: row.syn})
@@ -72,7 +44,6 @@ def bulk_import():
             MERGE (d)-[:HAS_SYNONYM]->(s)
             """, synonyms=synonyms)
 
-            # Parent IS_A
             session.run("""
             UNWIND $parents AS rel
             MERGE (p:Disease {id: rel.pid})
@@ -82,7 +53,6 @@ def bulk_import():
             MERGE (d)-[:IS_A]->(p)
             """, parents=parents)
 
-            # Child IS_A
             session.run("""
             UNWIND $children AS rel
             MERGE (c:Disease {id: rel.cid})
@@ -92,34 +62,7 @@ def bulk_import():
             MERGE (c)-[:IS_A]->(d)
             """, children=children)
 
-            # Symptoms
-            session.run("""
-            UNWIND $symptom_links AS row
-            MERGE (s:Symptom {name: row.symptom})
-            WITH s, row
-            MATCH (d:Disease {id: row.did})
-            MERGE (d)-[:HAS_SYMPTOM]->(s)
-            """, symptom_links=symptom_links)
-
-            # Treatments
-            session.run("""
-            UNWIND $treatment_links AS row
-            MERGE (t:Treatment {name: row.treatment})
-            WITH t, row
-            MATCH (d:Disease {id: row.did})
-            MERGE (d)-[:TREATED_WITH]->(t)
-            """, treatment_links=treatment_links)
-
-            # Specialists
-            session.run("""
-            UNWIND $specialist_links AS row
-            MERGE (sp:Specialist {name: row.specialist})
-            WITH sp, row
-            MATCH (d:Disease {id: row.did})
-            MERGE (d)-[:TREATED_BY]->(sp)
-            """, specialist_links=specialist_links)
-
-    print("✅ DONE: Imported diseases, definitions, and relationships.")
+    print("✅ DONE: Imported with UNWIND")
 
 if __name__ == "__main__":
     bulk_import()

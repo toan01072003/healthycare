@@ -1,28 +1,27 @@
-# chatbot/logic/neo4j_utils.py
-
 from neo4j import GraphDatabase
+import os
 
-# Cấu hình kết nối đến Neo4j
-NEO4J_URI = "bolt://localhost:7687"
-NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "test123"  # Đổi nếu bạn đặt khác
+# 🧠 Cấu hình Neo4j (đổi mật khẩu nếu cần)
+uri = "bolt://localhost:7687"
+auth = ("neo4j", "test12345")
 
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+driver = GraphDatabase.driver(uri, auth=auth)
 
 def get_disease_info_neo4j(disease_name):
-    """
-    Truy vấn mô tả, triệu chứng, chuyên khoa, hướng điều trị từ đồ thị Neo4j.
-    """
     with driver.session() as session:
         result = session.run("""
-            MATCH (d:Disease {name: $name})
-            OPTIONAL MATCH (d)-[:HAS_SYMPTOM]->(s:Symptom)
-            OPTIONAL MATCH (d)-[:TREATED_BY]->(t:Treatment)
-            OPTIONAL MATCH (d)-[:BELONGS_TO]->(sp:Specialist)
-            RETURN d.description AS description,
-                   collect(DISTINCT s.name) AS symptoms,
-                   collect(DISTINCT t.name) AS treatments,
-                   sp.name AS specialist
+            MATCH (d:Disease)
+            WHERE toLower(d.name) = toLower($name)
+               OR EXISTS {
+                   MATCH (d)-[:HAS_SYNONYM]->(s:Synonym)
+                   WHERE toLower(s.name) = toLower($name)
+               }
+            OPTIONAL MATCH (d)-[:TREATED_WITH]->(t:Treatment)
+            OPTIONAL MATCH (d)-[:TREATED_BY]->(s:Specialist)
+            RETURN d.definition AS description,
+                   COLLECT(DISTINCT t.name) AS treatments,
+                   s.name AS specialist
+            LIMIT 1
         """, name=disease_name)
 
         record = result.single()
@@ -30,14 +29,7 @@ def get_disease_info_neo4j(disease_name):
             return None
 
         return {
-            "description": record["description"],
-            "symptoms": record["symptoms"],
-            "treatments": record["treatments"],
-            "specialist": record["specialist"]
+            "description": record["description"] or "Không có mô tả.",
+            "treatments": record["treatments"] or [],
+            "specialist": record["specialist"] or "Chưa rõ"
         }
-
-def test_connection():
-    with driver.session() as session:
-        result = session.run("MATCH (n) RETURN count(n) AS total_nodes")
-        count = result.single()["total_nodes"]
-        print(f"✅ Connected to Neo4j. Total nodes: {count}")

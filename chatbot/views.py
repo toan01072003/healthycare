@@ -1,6 +1,7 @@
 # chatbot/views.py
 # from .logic.knowledge_utils import get_disease_info
-from .logic.neo4j_utils import get_disease_info_neo4j as get_disease_info
+from .logic.neo4j_utils import get_disease_info_neo4j 
+
 
 from django.shortcuts import render, redirect
 from .forms import ChatForm
@@ -51,7 +52,7 @@ def chatbot_view(request):
             reply = "Tôi dự đoán bạn có thể mắc:\n"
             for i, p in enumerate(predictions):
                 reply += f"{i+1}. {p['disease']} ({p['confidence']}%)\n"
-                info = get_disease_info(p['disease'])
+                info = get_disease_info_neo4j(p['disease'])
                 if info:
                     reply += f"📌 Mô tả: {info['description']}\n"
                     reply += f"👨‍⚕️ Chuyên khoa: {info['specialist']}\n"
