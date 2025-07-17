@@ -17,7 +17,7 @@ HealthyCare là hệ thống quản lý y tế xây dựng trên nền tảng Dj
 - notification
 - admin_management
 ## Mô hình chatbot và dự đoán bệnh 
-Sử dụng 2 phiê bản 
+Sử dụng 2 phiên bản 
 1. Sử dụn mô hình GloVe và Bi-LSTM
 2. Sử dụng mô hình deep learning NLP với BERT. Sau đó, xây dựng base knowledge Neo4J
 ## Kết nối dịch vụ với Docker
