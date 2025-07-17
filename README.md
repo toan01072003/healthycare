@@ -16,7 +16,10 @@ HealthyCare là hệ thống quản lý y tế xây dựng trên nền tảng Dj
 - pharmacy
 - notification
 - admin_management
-
+## Mô hình chatbot và dự đoán bệnh 
+Sử dụng 2 phiê bản 
+1. Sử dụn mô hình GloVe và Bi-LSTM
+2. Sử dụng mô hình deep learning NLP với BERT. Sau đó, xây dựng base knowledge Neo4J
 ## Kết nối dịch vụ với Docker
 Dự án có thể chạy bằng Docker để đơn giản hóa việc cài đặt. Sử dụng file `docker-compose.yml` để khởi tạo các service.
 
@@ -25,5 +28,5 @@ Dự án có thể chạy bằng Docker để đơn giản hóa việc cài đ�
 2. Chạy các service:
    ```bash
    docker-compose up --build
-   ```
+   ```     
 3. Truy cập ứng dụng tại `http://localhost:8000/`.
